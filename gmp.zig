@@ -10,7 +10,7 @@
 // These are defined as such:
 // ```
 // #define mpz_add __gmpz_add
-// __gmpz_add(...)
+// void mpz_add(...)
 // ```
 //
 // NOTE: Compiler can't yet deduce a typedef to a single element array properly.
