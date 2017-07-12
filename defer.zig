@@ -1,16 +1,22 @@
 const assert = @import("std").debug.assert;
 const printf = @import("std").io.stdout.printf;
 
-// defer will execute an expression at the end of the current function.
-// Any statements will run after the return value has been computed.
+// defer will execute an expression at the end of the current scope.
 fn deferExample() -> usize {
     var a: usize = 1;
-    defer a = 5;
+
+    {
+        defer a = 2;
+        a = 1;
+    }
+    assert(a == 2);
+
+    a = 5;
     a
 }
 
 test "defer basics" {
-    assert(deferExample() == 1);
+    assert(deferExample() == 5);
 }
 
 // If multiple defer statements are specified, they will be executed in
