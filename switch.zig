@@ -4,8 +4,8 @@ test "switch simple" {
     const a: u64 = 10;
     const zz: u64 = 103;
 
-    // A switch statement in zig is an expression. Each branch must return
-    // a value of the same type.
+    // A switch statement in zig is an expression. All branches must be able to
+    // be coerced to a common type.
     //
     // Branches cannot fallthrough. If fallthrough behavior is desired, combine the cases
     // and use an if.
@@ -25,6 +25,14 @@ test "switch simple" {
         // Switching on identifer values is allowed.
         zz => zz,
 
+        // Switching on arbitrary expressions is also allowed as long as they can
+        // evaluated completely at compiled.
+        comptime {
+            const d: u32 = 5;
+            const e: u32 = 100;
+            d + e
+        } => 107,
+
         // The else branch catches everything not already captured.
         else => 9,
     };
@@ -39,7 +47,7 @@ test "switch enum" {
         D,
     };
 
-    const a = Item.A { 3 };
+    var a = Item.A { 3 };
 
     // Switching on more complex enums is allowed.
     const b = switch (a) {
