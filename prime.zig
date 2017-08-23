@@ -71,7 +71,7 @@ test "eratosthenes sieve" {
 const SegmentedSieve = struct {
     allocator: &mem.Allocator,
     // Unlike the eratosthenes sieve, this stores the actual prime values.
-    primes: ArrayList(u64),
+    data: ArrayList(u64),
     hi: u64,
     lo: u64,
 
@@ -79,9 +79,9 @@ const SegmentedSieve = struct {
         assert(hi >= _lo);
 
         // List of resulting primes.
-        var primes = ArrayList(u64).init(allocator);
-        %defer primes.deinit();
-        %return primes.append(2);
+        var data = ArrayList(u64).init(allocator);
+        %defer data.deinit();
+        %return data.append(2);
 
         const hi_sqrt = u64(math.sqrt(f64(hi)));
         const segment_size = math.max(hi_sqrt, u64(8192));   // Use L1 cache size
@@ -136,29 +136,26 @@ const SegmentedSieve = struct {
             // Do something with the recently found primes of this segment
             while (n <= segment_hi) : (n += 2) {
                 if (sieve[n - lo]) {
-                    %return primes.append(n);
+                    %return data.append(n);
                 }
             }
         }
 
         SegmentedSieve {
             .allocator = allocator,
-            .primes = primes,
+            .data = data,
             .lo = lo,
             .hi = hi,
         }
     }
 
-    pub fn isPrime(self: &const Sieve, n: u64) -> bool {
-        if (n < 2 or n > self.limit) {
-            false
-        } else {
-            self.data[usize(n)]
-        }
+    /// Return a slice to the prime values stored.
+    pub fn primes(self: &const SegmentedSieve) -> []const u64 {
+        self.data.toSliceConst()
     }
 
-    pub fn deinit(self: &Sieve) {
-        self.allocator.free(self.data);
+    pub fn deinit(self: &SegmentedSieve) {
+        self.data.deinit();
     }
 };
 
@@ -167,8 +164,9 @@ test "segmented sieve" {
     defer reference.deinit();
 
     var segmented = %%SegmentedSieve.init(&al.c_allocator, 0, 10000);
+    defer segmented.deinit();
 
-    for (segmented.primes.toSliceConst()) |p| {
+    for (segmented.primes()) |p| {
         assert(reference.isPrime(p));
     }
 }
