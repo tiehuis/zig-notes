@@ -4,15 +4,6 @@
 //
 // Compile with zig build_exe --release-fast gmp.zig --library c --library gmp
 
-// See #88 for progress on these.
-//
-// NOTE: Compiler can't yet handle the #define for the __gmpz_init types.
-// These are defined as such:
-// ```
-// #define mpz_add __gmpz_add
-// void mpz_add(...)
-// ```
-//
 // NOTE: Compiler can't yet deduce a typedef to a single element array properly.
 // We can work around this by converting the single element array type into a pointer explicitly.
 // This is technically a result of C being pretty loose with its array to pointer coercion and is
@@ -31,25 +22,25 @@ var  den: mpz_t = undefined;
 var  num: mpz_t = undefined;
 
 fn extractDigit(nth: usize) -> usize {
-    __gmpz_mul_ui(&tmp1[0], &num[0], nth);
-    __gmpz_add(&tmp2[0], &tmp1[0], &acc[0]);
-    __gmpz_tdiv_q(&tmp1[0], &tmp2[0], &den[0]);
-    __gmpz_get_ui(&tmp1[0])
+    mpz_mul_ui(&tmp1[0], &num[0], nth);
+    mpz_add(&tmp2[0], &tmp1[0], &acc[0]);
+    mpz_tdiv_q(&tmp1[0], &tmp2[0], &den[0]);
+    mpz_get_ui(&tmp1[0])
 }
 
 fn eliminateDigit(d: usize) {
-    __gmpz_submul_ui(&acc[0], &den[0], d);
-    __gmpz_mul_ui(&acc[0], &acc[0], 10);
-    __gmpz_mul_ui(&num[0], &num[0], 10);
+    mpz_submul_ui(&acc[0], &den[0], d);
+    mpz_mul_ui(&acc[0], &acc[0], 10);
+    mpz_mul_ui(&num[0], &num[0], 10);
 }
 
 fn nextTerm(k: usize) {
     const k2 = k * 2 + 1;
 
-    __gmpz_addmul_ui(&acc[0], &num[0], 2);
-    __gmpz_mul_ui(&acc[0], &acc[0], k2);
-    __gmpz_mul_ui(&den[0], &den[0], k2);
-    __gmpz_mul_ui(&num[0], &num[0], k);
+    mpz_addmul_ui(&acc[0], &num[0], 2);
+    mpz_mul_ui(&acc[0], &acc[0], k2);
+    mpz_mul_ui(&den[0], &den[0], k2);
+    mpz_mul_ui(&num[0], &num[0], k);
 }
 
 pub fn main() -> %void {
@@ -59,11 +50,11 @@ pub fn main() -> %void {
     const arg_1 = if (std.os.args.count() > 1) { std.os.args.at(1) } else "10";
     const n = std.fmt.parseUnsigned(u32, arg_1, 10) %% 10;
 
-    __gmpz_init(&tmp1[0]);
-    __gmpz_init(&tmp2[0]);
-    __gmpz_init_set_ui(&acc[0], 0);
-    __gmpz_init_set_ui(&den[0], 1);
-    __gmpz_init_set_ui(&num[0], 1);
+    mpz_init(&tmp1[0]);
+    mpz_init(&tmp2[0]);
+    mpz_init_set_ui(&acc[0], 0);
+    mpz_init_set_ui(&den[0], 1);
+    mpz_init_set_ui(&num[0], 1);
 
     var i: usize = 0;
     var k: usize = 1;
@@ -71,7 +62,7 @@ pub fn main() -> %void {
     // We can create an expression nearly anywhere using a block.
     while (i < n) : (k += 1) {
         nextTerm(k);
-        if (__gmpz_cmp(&num[0], &acc[0]) > 0) {
+        if (mpz_cmp(&num[0], &acc[0]) > 0) {
             continue;
         }
 
