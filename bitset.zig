@@ -36,7 +36,7 @@ pub fn BitSet(comptime N: usize) -> type {
         }
 
         pub fn isSet(self: &Self, bit: usize) -> bool {
-            self.items[bit >> 3] & (1 << u8(bit & 7)) != 0
+            self.items[bit >> 3] & (u8(1) << u3(bit & 7)) != 0
         }
 
         pub fn any(self: &Self) -> bool {
@@ -64,15 +64,15 @@ pub fn BitSet(comptime N: usize) -> type {
         }
 
         pub fn set(self: &Self, bit: usize) {
-            self.items[bit >> 3] |= (1 << u8(bit & 7));
+            self.items[bit >> 3] |= (u8(1) << u3(bit & 7));
         }
 
         pub fn reset(self: &Self, bit: usize) {
-            self.items[bit >> 3] &= ~(1 << u8(bit & 7));
+            self.items[bit >> 3] &= ~(u8(1) << u3(bit & 7));
         }
 
         pub fn flip(self: &Self, bit: usize) {
-            self.items[bit >> 3] ^= (1 << u8(bit & 7));
+            self.items[bit >> 3] ^= (u8(1) << u3(bit & 7));
         }
     }
 }
