@@ -25,7 +25,11 @@ fn extractDigit(nth: usize) -> usize {
     mpz_mul_ui(&tmp1[0], &num[0], nth);
     mpz_add(&tmp2[0], &tmp1[0], &acc[0]);
     mpz_tdiv_q(&tmp1[0], &tmp2[0], &den[0]);
-    mpz_get_ui(&tmp1[0])
+    // NOTE: mpz_get_ui is defined inline in GMP 6.1 and parsec is not sufficient enough
+    // to cope with parsing.
+    //
+    // mpz_get_si is not defined inline so fall back to using that.
+    usize(mpz_get_si(&tmp1[0]))
 }
 
 fn eliminateDigit(d: usize) {
